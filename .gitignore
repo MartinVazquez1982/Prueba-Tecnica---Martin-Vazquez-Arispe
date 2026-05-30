@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# Python virtual environment
+venv/
+python/venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated index (built by ingest.py)
+python/data/
