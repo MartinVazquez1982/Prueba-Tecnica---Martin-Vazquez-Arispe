@@ -27,8 +27,8 @@ Respuesta JSON al usuario
 
 ## Requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Clave de API de OpenAI ([obtener aquí](https://platform.openai.com/api-keys))
+- Docker Desktop
+- Clave de API de OpenAI
 
 ## Configuración
 
@@ -69,10 +69,10 @@ Esto ejecuta tres servicios en orden:
 
 1. Abrir `http://localhost:5678`
 2. Ingresar con usuario `admin` y contraseña `admin`
-3. En el menú superior izquierdo ir a **Workflows → Add Workflow**
-4. Hacer click en el menú `⋮` → **Import from file**
+3. En la esquina superior derecha, hacer click en **New Workflow**
+4. En el menú `⋮` (esquina superior derecha), seleccionar **Import from file...**
 5. Seleccionar el archivo `n8n/workflow.json`
-6. Activar el workflow con el toggle **Inactive → Active** (esquina superior derecha)
+6. Hacer click en **Publish**
 
 ### Configurar las credenciales de OpenAI
 
@@ -148,16 +148,30 @@ curl http://localhost:8000/health
 
 ```
 .
-├── docs/                   # Documentación fuente (input del sistema)
+├── docs/                        # Documentación fuente (input del sistema)
+│   ├── Documentación 1.pdf
+│   ├── Documentación 2.txt
+│   ├── Documentación 3.md
+│   └── Documentación 4.json
 ├── n8n/
-│   └── workflow.json       # Workflow exportado listo para importar
+│   └── workflow.json            # Workflow exportado listo para importar
 ├── python/
-│   ├── readers/            # Parsers por tipo de archivo (.txt, .md, .pdf, .json)
-│   ├── tests/              # Tests unitarios
-│   ├── api.py              # FastAPI — endpoint /query y /health
-│   ├── ingest.py           # Pipeline de ingesta y construcción del índice
-│   ├── config.py           # Configuración centralizada
-│   ├── schemas.py          # Modelos Pydantic
+│   ├── readers/                 # Parsers por tipo de archivo (.txt, .md, .pdf, .json)
+│   │   ├── json_reader.py
+│   │   ├── md_reader.py
+│   │   ├── pdf_reader.py
+│   │   └── txt_reader.py
+│   ├── tests/                   # Tests unitarios
+│   │   ├── test_api.py
+│   │   ├── test_ingest.py
+│   │   └── test_schemas.py
+│   ├── api.py                   # FastAPI — endpoint /query y /health
+│   ├── config.py                # Configuración centralizada
+│   ├── embedder.py              # Cliente de embeddings OpenAI
+│   ├── ingest.py                # Pipeline de ingesta y construcción del índice
+│   ├── schemas.py               # Modelos Pydantic
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
 │   └── Dockerfile
 ├── docker-compose.yml
 ├── .env.example
