@@ -71,7 +71,8 @@
       "id": "d29b959c-5cef-45fd-8339-5cb23253dc99",
       "name": "HTTP Request",
       "retryOnFail": false,
-      "executeOnce": false
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -119,7 +120,7 @@
       "typeVersion": 2.3,
       "position": [
         80,
-        -208
+        -320
       ],
       "id": "63785cf1-10ce-4f63-b504-2849374da3fd",
       "name": "If1"
@@ -133,8 +134,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        288,
-        -112
+        304,
+        -224
       ],
       "id": "bcc5b0a8-8a4f-435a-95b5-effa8ae79dc5",
       "name": "Respond to Webhook1"
@@ -187,6 +188,23 @@
       ],
       "id": "1feba155-9bed-4251-b241-87130603b897",
       "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"El servicio de búsqueda no está disponible. Intente más tarde.\"\n}",
+        "options": {
+          "responseCode": 503
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        128,
+        -64
+      ],
+      "id": "8b421ddf-fa1d-49e8-8f4b-6bb76bbe1dc0",
+      "name": "Respond to Webhook3"
     }
   ],
   "pinData": {},
@@ -228,6 +246,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -266,7 +291,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "d9bba53e-7b97-4e5a-97b5-fefdab6a39e7",
+  "versionId": "8cc3b507-45ef-4a37-9d3e-b1ef9792f97a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e5c96ac0c833aa94e98d5403d7c8da1b266fbfcef4a0e1a25873a77ffc77eefa"
