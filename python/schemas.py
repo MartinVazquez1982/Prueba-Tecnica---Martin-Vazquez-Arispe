@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from config import DEFAULT_TOP_K
 
@@ -6,7 +6,7 @@ from config import DEFAULT_TOP_K
 class QueryRequest(BaseModel):
     """Incoming query from the user or n8n webhook."""
     question: str
-    top_k: int = DEFAULT_TOP_K
+    top_k: int = Field(default=DEFAULT_TOP_K, ge=1, le=20)
 
 
 class ChunkResult(BaseModel):

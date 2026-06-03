@@ -78,7 +78,7 @@ Esto ejecuta tres servicios en orden:
 
 > **Importante:** n8n cifra las credenciales con la `N8N_ENCRYPTION_KEY` de quien exportó el workflow. Al importarlo en una instancia nueva, el nodo de OpenAI aparecerá sin credenciales y hay que configurarlas manualmente.
 
-1. Hacer click en el nodo **"Message a model"**
+1. Hacer click en el nodo **"Generate Response"**
 2. En el campo **Credential** hacer click en **Create new credential**
 3. Ingresar el `OPENAI_API_KEY` del archivo `.env`
 4. Guardar y cerrar
@@ -168,6 +168,6 @@ curl http://localhost:8000/health
 
 ```bash
 cd python
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 pytest tests/ -v
 ```

@@ -7,8 +7,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 DOCS_DIR = BASE_DIR.parent / "docs"
 DATA_DIR = BASE_DIR / "data"
-INDEX_PATH = DATA_DIR / "faiss.index"
-METADATA_PATH = DATA_DIR / "metadata.json"
 
 # ---------------------------------------------------------------------------
 # Chunking
@@ -22,6 +20,7 @@ CHUNK_OVERLAP = 150
 # ---------------------------------------------------------------------------
 
 EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_TIMEOUT = 10.0
 
 # ---------------------------------------------------------------------------
 # Retrieval

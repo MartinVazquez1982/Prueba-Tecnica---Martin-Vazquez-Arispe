@@ -57,6 +57,63 @@ def test_read_md_strips_links(tmp_path):
     assert "click here" in result
 
 
+def test_read_md_strips_fenced_code_blocks(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("text\n```python\nprint('hi')\n```\nafter", encoding="utf-8")
+    result = read_md(f)
+    assert "```" not in result
+    assert "print" not in result
+    assert "after" in result
+
+
+def test_read_md_strips_images(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("![diagram](assets/img.png)", encoding="utf-8")
+    result = read_md(f)
+    assert "assets/img.png" not in result
+
+
+def test_read_md_strips_html_tags(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("<b>bold</b> text", encoding="utf-8")
+    result = read_md(f)
+    assert "<b>" not in result
+    assert "bold" in result
+
+
+def test_read_md_strips_blockquotes(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("> quoted text", encoding="utf-8")
+    result = read_md(f)
+    assert result.startswith(">") is False
+    assert "quoted text" in result
+
+
+def test_read_md_strips_unordered_list_markers(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("- item one\n* item two\n+ item three", encoding="utf-8")
+    result = read_md(f)
+    assert "- item" not in result
+    assert "item one" in result
+    assert "item two" in result
+
+
+def test_read_md_strips_ordered_list_markers(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("1. first\n2. second", encoding="utf-8")
+    result = read_md(f)
+    assert "1." not in result
+    assert "first" in result
+
+
+def test_read_md_strips_italic_underscores(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text("_italic_ and __bold__", encoding="utf-8")
+    result = read_md(f)
+    assert "_" not in result
+    assert "italic" in result
+
+
 # ---------------------------------------------------------------------------
 # read_pdf
 # ---------------------------------------------------------------------------

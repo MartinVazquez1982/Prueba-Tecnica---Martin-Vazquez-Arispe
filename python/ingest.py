@@ -17,7 +17,6 @@ from readers.json_reader import read_json
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 READERS = {
@@ -47,9 +46,8 @@ def clean_text(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 def load_documents(docs_dir: Path) -> list[Document]:
-    """Read, clean, and return all supported files as LangChain Documents."""
     documents = []
-    for path in sorted(docs_dir.iterdir()):
+    for path in sorted(p for p in docs_dir.rglob("*") if p.is_file()):
         ext = path.suffix.lower()
         if ext not in READERS:
             logger.warning(f"Skipping unsupported file: {path.name}")
@@ -58,7 +56,10 @@ def load_documents(docs_dir: Path) -> list[Document]:
         try:
             raw = READERS[ext](path)
             cleaned = clean_text(raw)
-            documents.append(Document(page_content=cleaned, metadata={"source": path.name}))
+            if not cleaned:
+                logger.warning(f"Skipping empty document: {path.name}")
+                continue
+            documents.append(Document(page_content=cleaned, metadata={"source": path.relative_to(docs_dir).as_posix()}))
             logger.info(f"  {len(cleaned)} chars after cleaning")
         except Exception as exc:
             logger.error(f"Failed to read {path.name}: {exc}")
@@ -86,6 +87,8 @@ def ingest(docs_dir: Path = DOCS_DIR, data_dir: Path = DATA_DIR) -> None:
         separators=["\n\n", "\n", ".", " ", ""],
     )
     chunks = splitter.split_documents(documents)
+    for i, chunk in enumerate(chunks):
+        chunk.metadata["chunk_index"] = i
     logger.info(f"Total chunks to embed: {len(chunks)}")
 
     embedder = get_embedder()
@@ -98,4 +101,5 @@ def ingest(docs_dir: Path = DOCS_DIR, data_dir: Path = DATA_DIR) -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     ingest()
