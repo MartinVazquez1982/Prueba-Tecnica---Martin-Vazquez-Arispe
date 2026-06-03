@@ -28,3 +28,4 @@ EMBEDDING_MODEL = "text-embedding-3-small"
 # ---------------------------------------------------------------------------
 
 DEFAULT_TOP_K = 5
+MIN_RELEVANCE_SCORE = 0.3

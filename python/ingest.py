@@ -4,12 +4,12 @@ import logging
 import unicodedata
 from pathlib import Path
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 
-from config import CHUNK_OVERLAP, CHUNK_SIZE, DATA_DIR, DOCS_DIR, EMBEDDING_MODEL
+from config import CHUNK_OVERLAP, CHUNK_SIZE, DATA_DIR, DOCS_DIR
+from embedder import get_embedder
 from readers.txt_reader import read_txt
 from readers.md_reader import read_md
 from readers.pdf_reader import read_pdf
@@ -88,8 +88,11 @@ def ingest(docs_dir: Path = DOCS_DIR, data_dir: Path = DATA_DIR) -> None:
     chunks = splitter.split_documents(documents)
     logger.info(f"Total chunks to embed: {len(chunks)}")
 
-    embedder = OpenAIEmbeddings(model=EMBEDDING_MODEL)
-    vectorstore = FAISS.from_documents(chunks, embedder)
+    embedder = get_embedder()
+    try:
+        vectorstore = FAISS.from_documents(chunks, embedder)
+    except Exception as exc:
+        raise RuntimeError(f"Failed to generate embeddings via OpenAI: {exc}") from exc
     vectorstore.save_local(str(data_dir))
     logger.info(f"Vector store saved → {data_dir} ({len(chunks)} chunks)")
 
