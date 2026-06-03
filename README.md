@@ -90,14 +90,14 @@ Con el workflow activo, enviar preguntas al webhook:
 ```bash
 curl -X POST http://localhost:5678/webhook/ask \
   -H "Content-Type: application/json" \
-  -d '{"question": "¿Cómo reinicio el servicio de autenticación?"}'
+  -d '{"question": "¿Cómo me contacto con soporte?"}'
 ```
 
 Respuesta esperada:
 
 ```json
 {
-  "answer": "Para reiniciar el servicio de autenticación..."
+  "answer": "..."
 }
 ```
 
@@ -117,7 +117,7 @@ curl -X POST http://localhost:5678/webhook/ask \
 # Pregunta sin información en la documentación
 curl -X POST http://localhost:5678/webhook/ask \
   -H "Content-Type: application/json" \
-  -d '{"question": "¿Cuál es el precio del plan premium?"}'
+  -d '{"question": "¿Cómo reinicio el servicio de autenticación?"}'
 ```
 
 ## Verificar que la API está funcionando
