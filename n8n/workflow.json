@@ -11,11 +11,11 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -544,
-        -112
+        -1264,
+        800
       ],
-      "id": "f554f0bf-a230-48ff-9ee9-c543cee6f1f9",
-      "name": "Webhook",
+      "id": "7f18797d-b023-450b-8661-02529f4ca9a7",
+      "name": "Receive Question",
       "webhookId": "029e5ae3-2264-46b8-854c-f16b86619eb1",
       "alwaysOutputData": false
     },
@@ -47,11 +47,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -336,
-        -112
+        -1056,
+        800
       ],
-      "id": "89bac8f4-74eb-441a-bf0d-6236646d9c99",
-      "name": "If"
+      "id": "cfccee20-2870-43c8-a433-43433ececb07",
+      "name": "Validate Input"
     },
     {
       "parameters": {
@@ -59,17 +59,19 @@
         "url": "http://host.docker.internal:8000/query",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"question\": \"{{ $('Webhook').item.json.body.question }}\",\n  \"top_k\": 5\n} ",
-        "options": {}
+        "jsonBody": "={\n  \"question\": \"{{ $('Receive Question').item.json.body.question }}\",\n  \"top_k\": 5\n} ",
+        "options": {
+          "timeout": 15000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -128,
-        -208
+        -848,
+        704
       ],
-      "id": "d29b959c-5cef-45fd-8339-5cb23253dc99",
-      "name": "HTTP Request",
+      "id": "36eed1fb-0c9c-4e3a-aaed-e856714fc417",
+      "name": "Search Documentation",
       "retryOnFail": false,
       "executeOnce": false,
       "onError": "continueErrorOutput"
@@ -85,11 +87,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -128,
-        -16
+        -848,
+        896
       ],
-      "id": "b7f1b04c-f3b9-4909-a6a4-59f8560d272e",
-      "name": "Respond to Webhook"
+      "id": "e2f1d20d-a7f6-4763-bc1f-0d9d6d016485",
+      "name": "Error 400 - Empty Question"
     },
     {
       "parameters": {
@@ -119,11 +121,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        80,
-        -320
+        -640,
+        592
       ],
-      "id": "63785cf1-10ce-4f63-b504-2849374da3fd",
-      "name": "If1"
+      "id": "f2699cfc-a9f7-4e65-b092-ac7c9f0bd78c",
+      "name": "Has Context?"
     },
     {
       "parameters": {
@@ -134,11 +136,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        304,
-        -224
+        -416,
+        688
       ],
-      "id": "bcc5b0a8-8a4f-435a-95b5-effa8ae79dc5",
-      "name": "Respond to Webhook1"
+      "id": "31763200-78fc-40aa-90c1-644146cc9427",
+      "name": "No Information Found"
     },
     {
       "parameters": {
@@ -162,17 +164,21 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.3,
       "position": [
-        288,
-        -416
+        -432,
+        496
       ],
-      "id": "15286aad-860a-49ff-a9f2-69c0898ebb38",
-      "name": "Message a model",
+      "id": "d0044088-8ee6-418b-ae95-8ac7b847d004",
+      "name": "Generate Response",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
       "credentials": {
         "openAiApi": {
           "id": "RTeCMEIRMtrvuEbK",
           "name": "OpenAI account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -183,11 +189,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        640,
-        -416
+        -80,
+        496
       ],
-      "id": "1feba155-9bed-4251-b241-87130603b897",
-      "name": "Respond to Webhook2"
+      "id": "1e2ef3f6-8ed5-43b6-ad09-915e5d8d5af3",
+      "name": "Send Answer"
     },
     {
       "parameters": {
@@ -200,85 +206,92 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        128,
-        -64
+        -80,
+        928
       ],
-      "id": "8b421ddf-fa1d-49e8-8f4b-6bb76bbe1dc0",
-      "name": "Respond to Webhook3"
+      "id": "8e973f4c-81b6-47eb-97b6-373cdd9f44fd",
+      "name": "Error 503 - Service Unavailable"
     }
   ],
   "pinData": {},
   "connections": {
-    "Webhook": {
+    "Receive Question": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Validate Input",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "Validate Input": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Search Documentation",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Error 400 - Empty Question",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "Search Documentation": {
       "main": [
         [
           {
-            "node": "If1",
+            "node": "Has Context?",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Respond to Webhook3",
+            "node": "Error 503 - Service Unavailable",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If1": {
+    "Has Context?": {
       "main": [
         [
           {
-            "node": "Message a model",
+            "node": "Generate Response",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Respond to Webhook1",
+            "node": "No Information Found",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Message a model": {
+    "Generate Response": {
       "main": [
         [
           {
-            "node": "Respond to Webhook2",
+            "node": "Send Answer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error 503 - Service Unavailable",
             "type": "main",
             "index": 0
           }
@@ -291,7 +304,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "8cc3b507-45ef-4a37-9d3e-b1ef9792f97a",
+  "versionId": "37a29fe9-2898-427a-aeb6-6711e1058602",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e5c96ac0c833aa94e98d5403d7c8da1b266fbfcef4a0e1a25873a77ffc77eefa"

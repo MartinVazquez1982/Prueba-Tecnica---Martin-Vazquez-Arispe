@@ -1,11 +1,12 @@
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from langchain_community.vectorstores import FAISS
-from openai import APIConnectionError, APIStatusError, RateLimitError
+from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
 
 from config import DATA_DIR, MIN_RELEVANCE_SCORE
 from embedder import get_embedder
@@ -16,13 +17,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-_vectorstore: FAISS | None = None
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _vectorstore
-
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("OPENAI_API_KEY is not set")
 
@@ -30,11 +27,12 @@ async def lifespan(app: FastAPI):
         raise RuntimeError("Vector store not found. Run ingest.py first.")
 
     embedder = get_embedder()
-    _vectorstore = FAISS.load_local(
+    app.state.vectorstore = FAISS.load_local(
         str(DATA_DIR), embedder, allow_dangerous_deserialization=True
     )
-    logger.info(f"Vector store loaded: {_vectorstore.index.ntotal} vectors")
+    logger.info(f"Vector store loaded: {app.state.vectorstore.index.ntotal} vectors")
     yield
+    app.state.vectorstore = None
 
 
 app = FastAPI(title="Support Assistant — Retrieval API", lifespan=lifespan)
@@ -45,27 +43,33 @@ app = FastAPI(title="Support Assistant — Retrieval API", lifespan=lifespan)
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
-def health():
+def health(request: Request):
+    vs = getattr(request.app.state, "vectorstore", None)
     return {
         "status": "ok",
-        "index_loaded": _vectorstore is not None,
-        "total_chunks": _vectorstore.index.ntotal if _vectorstore else 0,
+        "index_loaded": vs is not None,
+        "total_chunks": vs.index.ntotal if vs else 0,
     }
 
 
 @app.post("/query", response_model=QueryResponse)
-def query(request: QueryRequest):
+async def query(req: Request, body: QueryRequest):
     """Retrieve the most relevant chunks for a question via the LangChain retriever."""
-    if not request.question.strip():
+    if not body.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
-    if _vectorstore is None:
+    vs = getattr(req.app.state, "vectorstore", None)
+    if vs is None:
         raise HTTPException(status_code=503, detail="Index not loaded.")
 
     try:
-        docs_with_scores = _vectorstore.similarity_search_with_relevance_scores(
-            request.question, k=request.top_k
+        docs_with_scores = await asyncio.to_thread(
+            vs.similarity_search_with_relevance_scores,
+            body.question,
+            k=body.top_k,
         )
+    except APITimeoutError:
+        raise HTTPException(status_code=504, detail="OpenAI API request timed out.")
     except RateLimitError:
         raise HTTPException(status_code=429, detail="OpenAI rate limit reached. Try again later.")
     except APIConnectionError:
@@ -88,4 +92,4 @@ def query(request: QueryRequest):
         if score >= MIN_RELEVANCE_SCORE
     ]
 
-    return QueryResponse(question=request.question, results=results)
+    return QueryResponse(question=body.question, results=results)
